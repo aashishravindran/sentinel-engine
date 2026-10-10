@@ -1,0 +1,19 @@
+Sentinel Engine
+Copyright (c) 2026 Aashish Ravindran. All rights reserved.
+
+This software is licensed under the Elastic License 2.0.
+See the LICENSE file for the full license text.
+
+---
+
+This software includes open-source components with the following licenses:
+
+- fastmcp          — MIT License
+- aiosqlite        — MIT License
+- chromadb         — Apache 2.0
+- sentence-transformers — Apache 2.0
+- pypdf            — BSD License
+- python-dotenv    — BSD License
+- boto3            — Apache 2.0
+- aioboto3         — Apache 2.0
+- requests-aws4auth — MIT License

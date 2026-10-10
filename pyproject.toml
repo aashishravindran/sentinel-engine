@@ -1,0 +1,54 @@
+[project]
+name = "sentinel-engine"
+version = "0.1.0"
+description = "Policy decision point for permission-aware RAG: resolve who a caller is allowed to read, push that into the retrieval query, fail closed."
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [{ name = "Aashish Ravindran" }]
+requires-python = ">=3.11"
+dependencies = [
+    "pyjwt[crypto]>=2.8",
+]
+
+[project.optional-dependencies]
+sqlite = ["aiosqlite>=0.20"]
+spicedb = ["authzed>=0.8", "grpcio>=1.60"]
+aws = ["aioboto3>=13.0", "boto3>=1.34"]
+chroma = ["chromadb>=0.5", "sentence-transformers>=2.7"]
+all = ["sentinel-engine[sqlite,spicedb,aws,chroma]"]
+
+[project.urls]
+Repository = "https://github.com/aashishravindran/sentinel-engine"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+    "ruff>=0.6",
+    "pyright>=1.1.380",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "RUF"]
+
+[tool.pyright]
+include = ["sentinel_engine"]
+pythonVersion = "3.11"
+typeCheckingMode = "standard"
+# Core policy code is strict; connectors wrap untyped SDKs (aioboto3, chromadb).
+strict = ["sentinel_engine/*.py", "sentinel_engine/ingest"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["sentinel_engine"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
