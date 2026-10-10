@@ -73,9 +73,13 @@ def principal_from_claims(
     Shared with adapters that delegate signature checks to their framework, so
     the rules on ``sub``, expiry and client are identical everywhere.
     """
+    now = time.time()
     exp = claims.get("exp")
-    if not isinstance(exp, int | float) or exp + settings.leeway_seconds < time.time():
+    if not isinstance(exp, int | float) or exp + settings.leeway_seconds < now:
         raise IdentityError("token is expired or has no expiry")
+    nbf = claims.get("nbf", now)
+    if not isinstance(nbf, int | float) or nbf - settings.leeway_seconds > now:
+        raise IdentityError("token is not valid yet")
     if settings.allowed_clients:
         client = claims.get("client_id") or claims.get("azp")
         if client not in settings.allowed_clients:

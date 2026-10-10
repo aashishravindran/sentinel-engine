@@ -136,3 +136,14 @@ def test_settings_from_env():
     )
     assert settings.allowed_clients == ("a", "b")
     assert settings.audience == ()
+
+
+def test_claim_checks_reject_not_yet_valid_tokens_even_after_signature_checks():
+    """Frameworks that verify signatures (e.g. FastMCP) may skip nbf; Sentinel does not."""
+    from sentinel_engine.oidc import principal_from_claims
+
+    settings = OIDCSettings(issuer=ISSUER, public_key=PUBLIC, audience=(AUDIENCE,))
+    now = int(time.time())
+    with pytest.raises(IdentityError):
+        principal_from_claims({"sub": "alice", "exp": now + 300, "nbf": now + 3600}, settings)
+    assert principal_from_claims({"sub": "alice", "exp": now + 300, "nbf": now}, settings)
