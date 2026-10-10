@@ -419,6 +419,15 @@ wheels = [
 ]
 
 [[package]]
+name = "botocore-stubs"
+version = "1.43.67"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/3f/45/53d662227dc4787b2c854445ee7eb4751cb5d74cfb5c686a6ecbe1f94c17/botocore_stubs-1.43.67.tar.gz", hash = "sha256:853e74014a1f557055c4ffae5fb38d7c65c7c0520e1aab366cac41d5428f419d", size = 42846, upload-time = "2026-08-08T14:57:53.412Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/4e/5e/bdbf19967898a032292da65a47d6e25b2eee55865db4e687f861d80b5602/botocore_stubs-1.43.67-py3-none-any.whl", hash = "sha256:c51262bac3341c1cda71f05fa01141fffd3990d7a92c7960e3b755c1bc830373", size = 67244, upload-time = "2026-08-08T14:57:52.01Z" },
+]
+
+[[package]]
 name = "build"
 version = "1.6.1"
 source = { registry = "https://pypi.org/simple" }
@@ -3749,6 +3758,7 @@ dev = [
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "ruff" },
+    { name = "types-aioboto3", extra = ["bedrock-agent", "bedrock-agent-runtime", "dynamodb", "iam", "s3"] },
 ]
 
 [package.metadata]
@@ -3771,6 +3781,7 @@ dev = [
     { name = "pytest", specifier = ">=8.0" },
     { name = "pytest-asyncio", specifier = ">=0.24" },
     { name = "ruff", specifier = ">=0.6" },
+    { name = "types-aioboto3", extras = ["bedrock-agent", "bedrock-agent-runtime", "dynamodb", "iam", "s3"], specifier = ">=15.5.0" },
 ]
 
 [[package]]
@@ -3971,6 +3982,120 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/03/51/d33db42cc72ffd8c30777547b42d01f0cbf9d95a770457698d0174b3ed71/typer-0.27.3.tar.gz", hash = "sha256:d0396f770a560ab1b0a8504e13b5f254b728cedb05c61cf0359e944e50ce8901", size = 205303, upload-time = "2026-10-06T17:24:16.61Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/07/ea/2e31b67051e91a133189e9c000c222502ddc6969856416de0d095de4c0b0/typer-0.27.3-py3-none-any.whl", hash = "sha256:e50022f28b82a86313e54501317a1db64bf8f8d036ff8cfe5ca7e47675454aff", size = 123312, upload-time = "2026-10-06T17:24:15.054Z" },
+]
+
+[[package]]
+name = "types-aioboto3"
+version = "15.5.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "botocore-stubs" },
+    { name = "types-aiobotocore" },
+    { name = "types-s3transfer" },
+    { name = "typing-extensions", marker = "python_full_version < '3.12'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/56/76/e162ea2ef8d414d4f36f28a6e0b6078ccef3f2f9d5f957859f303995c528/types_aioboto3-15.5.0.tar.gz", hash = "sha256:5769a1c3df7ca1abedf3656ddf0b970c9b0436d0f88cf4686040b55cd2a02925", size = 81059, upload-time = "2025-10-31T01:11:54.445Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ec/1d/e187fbe9771dffb5f0801e315ac23a6c383c14d1cbb90da6ca3ad1ea9b06/types_aioboto3-15.5.0-py3-none-any.whl", hash = "sha256:8aed7c9b6fe9b59e6ce74f7a6db7b8a9912a34c8f80ed639fac1fa59d6b20aa1", size = 42521, upload-time = "2025-10-31T01:11:47.832Z" },
+]
+
+[package.optional-dependencies]
+bedrock-agent = [
+    { name = "types-aiobotocore-bedrock-agent" },
+]
+bedrock-agent-runtime = [
+    { name = "types-aiobotocore-bedrock-agent-runtime" },
+]
+dynamodb = [
+    { name = "types-aiobotocore-dynamodb" },
+]
+iam = [
+    { name = "types-aiobotocore-iam" },
+]
+s3 = [
+    { name = "types-aiobotocore-s3" },
+]
+
+[[package]]
+name = "types-aiobotocore"
+version = "3.9.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "botocore-stubs" },
+    { name = "typing-extensions", marker = "python_full_version < '3.12'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/43/cd/79562ee488be03558881bc2ae402bcfc712d234545b5d7fd7628a20a08e0/types_aiobotocore-3.9.2.tar.gz", hash = "sha256:c7ed080b6dc414cdd4e358f4deeb0eb73dccb1bfd539b2dc7b9422618ab70608", size = 90177, upload-time = "2026-10-01T04:52:56.583Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b9/e2/5ccbf548bbbb370b81fbde75f331ba6bc253633d1f3a04140300637d0322/types_aiobotocore-3.9.2-py3-none-any.whl", hash = "sha256:c20d291feb09c4fd5681d7ce9ea6226ed58f9643f2364c5abc90aa29f188ebea", size = 55589, upload-time = "2026-10-01T04:52:52.341Z" },
+]
+
+[[package]]
+name = "types-aiobotocore-bedrock-agent"
+version = "2.25.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "typing-extensions", marker = "python_full_version < '3.12'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/8a/ca/e39ac072aa50470ea9a77037afa962c503dd45766b4234261bfc45ee8825/types_aiobotocore_bedrock_agent-2.25.2.tar.gz", hash = "sha256:1908898dbaf125305cc02c186c46796753ff6c77d8dd22d44c3bead85aea96ee", size = 53442, upload-time = "2025-11-12T01:41:46.785Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ba/05/f9422f8dd37849d386384767a15f582c01958152c91dc473834c1d0f2420/types_aiobotocore_bedrock_agent-2.25.2-py3-none-any.whl", hash = "sha256:1b28a2d047d7e962a57748c2cd3a014f2bd6c81115c113cc1f251591efef793d", size = 60352, upload-time = "2025-11-12T01:41:45.187Z" },
+]
+
+[[package]]
+name = "types-aiobotocore-bedrock-agent-runtime"
+version = "2.25.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "typing-extensions", marker = "python_full_version < '3.12'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/5c/7b/3f0ac6c22aaa46af2992b4361eef553322618eb1242eceae3f9c924042f6/types_aiobotocore_bedrock_agent_runtime-2.25.2.tar.gz", hash = "sha256:edb98a2d22291abfad3309978afa6e37840236f66218c6edac71ed79e560d97b", size = 41684, upload-time = "2025-11-12T01:41:49.323Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d2/f5/c1f799d4718bc44af7384c6b5c9c50c89b26e9cf488d98c6bb6104a69929/types_aiobotocore_bedrock_agent_runtime-2.25.2-py3-none-any.whl", hash = "sha256:4978f85f168493268160958fcb6c568b8076b50b7eb4d421d0f06ba751af9cfb", size = 50845, upload-time = "2025-11-12T01:41:48.136Z" },
+]
+
+[[package]]
+name = "types-aiobotocore-dynamodb"
+version = "2.25.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "typing-extensions", marker = "python_full_version < '3.12'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/3e/8c/1a97e249fa621807cffdd840a9db2158af5b786aeb54179b9582e46f181d/types_aiobotocore_dynamodb-2.25.2.tar.gz", hash = "sha256:75cfd3e3ee216a59df1814195e06cd6723c4f88315da9f76f9e3720be5ffd2cd", size = 47681, upload-time = "2025-11-12T01:45:15.664Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d1/aa/79e167f85732f0ccbb7343a1e8cbb6bf8e7d3c4bb2aaf9a47cc93d8b1f31/types_aiobotocore_dynamodb-2.25.2-py3-none-any.whl", hash = "sha256:680c60867320d7011be351ed724a50b9488bc62d545c9bc009b2f44f7a715f7f", size = 57658, upload-time = "2025-11-12T01:45:14.427Z" },
+]
+
+[[package]]
+name = "types-aiobotocore-iam"
+version = "2.25.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "typing-extensions", marker = "python_full_version < '3.12'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/31/4b/e765015c4afd7637c1c1119ce0709b0c57613a8cdc4dde109c4039d274cd/types_aiobotocore_iam-2.25.2.tar.gz", hash = "sha256:ab1afc1feef96f98e85a0603e4e9e0240be8c2f1357a67e23820f07fe8a656cd", size = 87797, upload-time = "2025-11-12T01:46:39.184Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/31/84/fdbe994c6e3cc75f51dc6e36b4127bfc431c9a7b29defc8f2fb28bb50ad6/types_aiobotocore_iam-2.25.2-py3-none-any.whl", hash = "sha256:3661817ebc99c1c957249add1d618af258dbc66c1dff23bf4249749386730fa8", size = 93997, upload-time = "2025-11-12T01:46:36.989Z" },
+]
+
+[[package]]
+name = "types-aiobotocore-s3"
+version = "2.25.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "typing-extensions", marker = "python_full_version < '3.12'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a7/c6/9bb91a44eed1114690edb15d8251f32392e355dfa0a5b8e1c190b4cf89a4/types_aiobotocore_s3-2.25.2.tar.gz", hash = "sha256:678aa425491af19bd6d011d59ecdbbb7ae7e95800efddcf4fd559ab72c94e194", size = 75955, upload-time = "2025-11-12T01:52:06.536Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b4/0a/d0d9faefd7caa8536eb97647c38c711e73ab83341a65119d08c2cb20957d/types_aiobotocore_s3-2.25.2-py3-none-any.whl", hash = "sha256:151301e84bb2f1cbf30f0d1ef791bb75c141cfbfe47b93fd317b7f1ba3eb35e4", size = 83626, upload-time = "2025-11-12T01:52:04.763Z" },
+]
+
+[[package]]
+name = "types-s3transfer"
+version = "0.16.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/fe/64/42689150509eb3e6e82b33ee3d89045de1592488842ddf23c56957786d05/types_s3transfer-0.16.0.tar.gz", hash = "sha256:b4636472024c5e2b62278c5b759661efeb52a81851cde5f092f24100b1ecb443", size = 13557, upload-time = "2025-12-08T08:13:09.928Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/98/27/e88220fe6274eccd3bdf95d9382918716d312f6f6cef6a46332d1ee2feff/types_s3transfer-0.16.0-py3-none-any.whl", hash = "sha256:1c0cd111ecf6e21437cb410f5cddb631bfb2263b77ad973e79b9c6d0cb24e0ef", size = 19247, upload-time = "2025-12-08T08:13:08.426Z" },
 ]
 
 [[package]]

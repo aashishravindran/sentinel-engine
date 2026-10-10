@@ -28,7 +28,8 @@ class DynamoDBIdentityConnector(IdentityConnector):
         async with self._session.resource("dynamodb", region_name=self.region) as ddb:
             table = await ddb.Table(self.table_name)
             response = await table.get_item(Key={"user_id": user_id})
-            item = response.get("Item")
-            if not item:
+            tags = response.get("Item", {}).get("tags")
+            # A missing item or a tags attribute of the wrong type grants nothing.
+            if not isinstance(tags, set | list):
                 return set()
-            return set(item.get("tags", []))
+            return {t for t in tags if isinstance(t, str)}

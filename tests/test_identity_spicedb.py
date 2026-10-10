@@ -140,3 +140,35 @@ async def test_custom_resource_permission_and_user_types():
     assert request.permission == "view"
     assert request.subject.object.object_type == "principal"
     assert request.subject.object.object_id == "eve"
+
+
+@pytest.mark.asyncio
+async def test_every_rpc_carries_a_deadline():
+    connector = SpiceDBIdentityConnector("localhost:50051", "t", tls=False, timeout_seconds=0.5)
+    stub = _stub_returning("public")
+    with patch.object(connector, "_make_stub", return_value=(stub, [])):
+        await connector.get_tags("alice")
+    assert stub.LookupResources.call_args.kwargs["timeout"] == 0.5
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("permissionship, expected", [(2, True), (1, False)])
+async def test_check_permission(connector, permissionship, expected):
+    from unittest.mock import AsyncMock
+
+    stub = MagicMock()
+    stub.CheckPermission = AsyncMock(return_value=MagicMock(permissionship=permissionship))
+    with patch.object(connector, "_make_stub", return_value=(stub, [])):
+        allowed = await connector.check_permission("platform", "sentinel", "administer", "root")
+    assert allowed is expected
+    request = stub.CheckPermission.call_args.args[0]
+    assert (request.resource.object_type, request.resource.object_id) == ("platform", "sentinel")
+    assert request.subject.object.object_id == "root"
+
+
+@pytest.mark.asyncio
+async def test_channel_is_reused_within_a_loop():
+    connector = SpiceDBIdentityConnector("localhost:50051", "t", tls=False)
+    first = connector._make_stub()
+    assert connector._make_stub() is first
+    await connector.aclose()

@@ -26,6 +26,7 @@ dev = [
     "pytest-asyncio>=0.24",
     "ruff>=0.6",
     "pyright>=1.1.380",
+    "types-aioboto3[bedrock-agent,bedrock-agent-runtime,dynamodb,iam,s3]>=15.5.0",
 ]
 
 [tool.pytest.ini_options]

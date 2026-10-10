@@ -28,10 +28,19 @@ Configuration env vars (used by main.py):
 
 from __future__ import annotations
 
+import logging
+from collections.abc import Iterable
+from typing import TYPE_CHECKING
+
 import aioboto3
 from botocore.exceptions import ClientError
 
 from sentinel_engine.base import IdentityConnector
+
+if TYPE_CHECKING:
+    from types_aiobotocore_iam.type_defs import TagTypeDef
+
+logger = logging.getLogger(__name__)
 
 
 class IAMIdentityConnector(IdentityConnector):
@@ -73,7 +82,7 @@ class IAMIdentityConnector(IdentityConnector):
         self.tag_key_prefix = tag_key_prefix
         self._session = aioboto3.Session()
 
-    def _to_sentinel_tags(self, aws_tags: list[dict]) -> set[str]:
+    def _to_sentinel_tags(self, aws_tags: Iterable[TagTypeDef]) -> set[str]:
         """Convert a list of AWS tag dicts to Sentinel permission tag strings."""
         tags: set[str] = set()
         for tag in aws_tags:
@@ -104,11 +113,11 @@ class IAMIdentityConnector(IdentityConnector):
                     response = await iam.list_user_tags(UserName=user_id)
                 return self._to_sentinel_tags(response.get("Tags", []))
         except ClientError as e:
-            code = e.response["Error"]["Code"]
+            code = e.response.get("Error", {}).get("Code", "")
             if code == "NoSuchEntity":
                 return set()
-            print(f"IAMIdentityConnector AWS error [{code}]: {e}")
+            logger.warning("IAM tag lookup failed [%s] for %s", code, user_id)
             return set()
-        except Exception as e:
-            print(f"IAMIdentityConnector error: {e}")
+        except Exception:
+            logger.exception("IAM tag lookup failed for %s", user_id)
             return set()
