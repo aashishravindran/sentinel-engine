@@ -20,8 +20,10 @@ from sentinel_engine.connectors.identity.spicedb import SpiceDBIdentityConnector
 from sentinel_engine.connectors.knowledge.bedrock import BedrockKnowledgeConnector
 from sentinel_engine.oidc import OIDCSettings, TokenVerifier
 
-verifier = TokenVerifier(OIDCSettings.from_env())             # any OIDC issuer
-engine = SentinelEngine(SpiceDBIdentityConnector(endpoint, token), BedrockKnowledgeConnector(kb_id, bucket))
+verifier = TokenVerifier(OIDCSettings.from_env())  # any OIDC issuer
+engine = SentinelEngine(
+    SpiceDBIdentityConnector(endpoint, token), BedrockKnowledgeConnector(kb_id, bucket)
+)
 
 user = verifier.verify_authorization_header(request.headers["authorization"])
 try:
