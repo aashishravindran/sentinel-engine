@@ -3,11 +3,15 @@
 # found in the LICENSE file.
 
 import asyncio
+from collections.abc import Mapping, Set
+from typing import Any
 
 import chromadb
 from sentence_transformers import SentenceTransformer
 
-from sentinel_engine.base import KnowledgeConnector
+from sentinel_engine.base import Chunk, KnowledgeConnector, MetadataValue
+from sentinel_engine.filters import build_chroma_where
+from sentinel_engine.ingest.stamp import stamp_metadata, validate_doc_id
 
 
 class ChromaKnowledgeConnector(KnowledgeConnector):
@@ -36,16 +40,9 @@ class ChromaKnowledgeConnector(KnowledgeConnector):
     def _embed(self, text: str) -> list[float]:
         return self._model.encode(text).tolist()
 
-    def _build_where_filter(self, tags: set[str]) -> dict:
-        """OR filter: retrieve docs where the user holds at least one access tag."""
-        tag_conditions = [{f"tag_{tag}": {"$eq": True}} for tag in tags]
-        if len(tag_conditions) == 1:
-            return tag_conditions[0]
-        return {"$or": tag_conditions}
-
-    async def search(self, query: str, tags: set[str], n_results: int = 5) -> list[dict]:
+    async def search(self, query: str, tags: Set[str], n_results: int = 5) -> list[Chunk]:
         embedding = await asyncio.to_thread(self._embed, query)
-        where = self._build_where_filter(tags)
+        where: Any = build_chroma_where(tags)
 
         try:
             results = await asyncio.to_thread(
@@ -67,16 +64,12 @@ class ChromaKnowledgeConnector(KnowledgeConnector):
             else:
                 raise
 
-        docs = results["documents"][0]
-        metas = results["metadatas"][0]
-        distances = results["distances"][0]
+        docs = (results["documents"] or [[]])[0]
+        metas = (results["metadatas"] or [[]])[0]
+        distances = (results["distances"] or [[]])[0]
 
         return [
-            {
-                "text": doc,
-                "metadata": meta,
-                "score": round(1 - dist, 4),
-            }
+            {"text": doc, "metadata": dict(meta), "score": round(1 - dist, 4)}
             for doc, meta, dist in zip(docs, metas, distances, strict=True)
         ]
 
@@ -85,14 +78,11 @@ class ChromaKnowledgeConnector(KnowledgeConnector):
         text: str,
         access_tags: list[str],
         doc_id: str,
-        metadata: dict | None = None,
+        metadata: Mapping[str, MetadataValue] | None = None,
     ) -> None:
+        doc_id = validate_doc_id(doc_id)
+        meta: Any = stamp_metadata(access_tags, metadata)
         embedding = await asyncio.to_thread(self._embed, text)
-
-        meta = dict(metadata or {})
-        for tag in access_tags:
-            meta[f"tag_{tag}"] = True
-        meta["access_tags"] = ",".join(access_tags)
 
         await asyncio.to_thread(
             self._collection.upsert,

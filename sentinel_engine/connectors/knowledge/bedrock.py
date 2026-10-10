@@ -3,10 +3,14 @@
 # found in the LICENSE file.
 
 import json
+from collections.abc import Mapping, Set
+from typing import Any
 
 import aioboto3
 
-from sentinel_engine.base import KnowledgeConnector
+from sentinel_engine.base import Chunk, KnowledgeConnector, MetadataValue
+from sentinel_engine.filters import build_vector_search_config
+from sentinel_engine.ingest.stamp import stamp_metadata, validate_doc_id
 
 # Default reranking model — Amazon Rerank 1.0 (cross-encoder, no extra cost beyond API calls)
 _DEFAULT_RERANK_MODEL = "arn:aws:bedrock:{region}::foundation-model/amazon.rerank-v1:0"
@@ -41,7 +45,7 @@ class BedrockKnowledgeConnector(KnowledgeConnector):
     Ingestion: uploads document text to S3, writes the metadata sidecar, then
     optionally triggers a Bedrock KB ingestion job (if data_source_id is set).
 
-    Environment variables used by main.py:
+    Environment variables (read by sentinel_engine.factory):
         BEDROCK_KB_ID           — Knowledge Base ID
         BEDROCK_S3_BUCKET       — S3 bucket backing the KB data source
         BEDROCK_S3_PREFIX       — S3 key prefix for documents (default: "documents/")
@@ -74,30 +78,9 @@ class BedrockKnowledgeConnector(KnowledgeConnector):
         self.reranking = reranking
         self.rerank_model_arn = rerank_model_arn or _DEFAULT_RERANK_MODEL.format(region=region)
         self.rerank_oversample = max(1, rerank_oversample)
+        self._session = aioboto3.Session()
 
-    def _build_filter(self, tags: set[str]) -> dict:
-        """OR filter: return docs where the user holds at least one access tag."""
-        conditions = [{"equals": {"key": f"tag_{tag}", "value": True}} for tag in tags]
-        if len(conditions) == 1:
-            return conditions[0]
-        return {"orAll": conditions}
-
-    def _build_retrieval_config(self, tags: set[str], fetch_n: int) -> dict:
-        """
-        Build the retrievalConfiguration block.
-
-        fetch_n is the number of candidates to retrieve from the KB.
-        When reranking is enabled this is n_results * rerank_oversample so the
-        reranker has enough candidates to work with.
-        """
-        vector_search: dict = {
-            "numberOfResults": fetch_n,
-            "filter": self._build_filter(tags),
-            "overrideSearchType": self.search_type,
-        }
-        return {"vectorSearchConfiguration": vector_search}
-
-    def _build_reranking_config(self, n_results: int) -> dict:
+    def _build_reranking_config(self, n_results: int) -> dict[str, Any]:
         """Build the rerankingConfiguration block for the retrieve call."""
         return {
             "type": "BEDROCK_RERANKING_MODEL",
@@ -109,32 +92,28 @@ class BedrockKnowledgeConnector(KnowledgeConnector):
             },
         }
 
-    async def search(self, query: str, tags: set[str], n_results: int = 5) -> list[dict]:
+    async def search(self, query: str, tags: Set[str], n_results: int = 5) -> list[Chunk]:
         # When reranking, over-fetch so the cross-encoder has more candidates.
         fetch_n = n_results * self.rerank_oversample if self.reranking else n_results
 
-        retrieval_config = self._build_retrieval_config(tags, fetch_n)
-
-        call_kwargs: dict = {
+        call_kwargs: dict[str, Any] = {
             "knowledgeBaseId": self.kb_id,
             "retrievalQuery": {"text": query},
-            "retrievalConfiguration": retrieval_config,
+            "retrievalConfiguration": build_vector_search_config(tags, fetch_n, self.search_type),
         }
 
         if self.reranking:
             call_kwargs["rerankingConfiguration"] = self._build_reranking_config(n_results)
 
-        async with aioboto3.Session().client(
-            "bedrock-agent-runtime", region_name=self.region
-        ) as client:
+        async with self._session.client("bedrock-agent-runtime", region_name=self.region) as client:
             response = await client.retrieve(**call_kwargs)
 
-        results = []
+        results: list[Chunk] = []
         for item in response.get("retrievalResults", []):
             content = item.get("content", {}).get("text", "")
             score = item.get("score", 0.0)
             location = item.get("location", {})
-            metadata = dict(item.get("metadata", {}))
+            metadata: dict[str, Any] = dict(item.get("metadata", {}))
             metadata["source"] = location.get("s3Location", {}).get("uri", "")
             results.append({"text": content, "metadata": metadata, "score": score})
 
@@ -145,23 +124,14 @@ class BedrockKnowledgeConnector(KnowledgeConnector):
         text: str,
         access_tags: list[str],
         doc_id: str,
-        metadata: dict | None = None,
+        metadata: Mapping[str, MetadataValue] | None = None,
     ) -> None:
-        s3_key = f"{self.s3_prefix}{doc_id}.txt"
+        s3_key = f"{self.s3_prefix}{validate_doc_id(doc_id)}.txt"
         meta_key = f"{s3_key}.metadata.json"
+        # Bedrock KB sidecar format: flat key-value pairs next to the document.
+        metadata_doc = {"metadataAttributes": stamp_metadata(access_tags, metadata)}
 
-        # Bedrock KB metadata format: flat key-value pairs
-        attrs: dict = {}
-        for tag in access_tags:
-            attrs[f"tag_{tag}"] = True
-        attrs["access_tags"] = ",".join(access_tags)
-        if metadata:
-            for k, v in metadata.items():
-                attrs[k] = str(v)
-
-        metadata_doc = {"metadataAttributes": attrs}
-
-        async with aioboto3.Session().client("s3", region_name=self.region) as s3:
+        async with self._session.client("s3", region_name=self.region) as s3:
             await s3.put_object(Bucket=self.s3_bucket, Key=s3_key, Body=text.encode("utf-8"))
             await s3.put_object(
                 Bucket=self.s3_bucket,
@@ -172,9 +142,7 @@ class BedrockKnowledgeConnector(KnowledgeConnector):
 
         # Trigger KB sync if a data source ID is configured
         if self.data_source_id:
-            async with aioboto3.Session().client(
-                "bedrock-agent", region_name=self.region
-            ) as client:
+            async with self._session.client("bedrock-agent", region_name=self.region) as client:
                 await client.start_ingestion_job(
                     knowledgeBaseId=self.kb_id,
                     dataSourceId=self.data_source_id,

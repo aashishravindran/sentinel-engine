@@ -3,6 +3,18 @@
 # found in the LICENSE file.
 
 from abc import ABC, abstractmethod
+from collections.abc import Mapping, Set
+from typing import Any, TypedDict
+
+MetadataValue = str | int | float | bool
+
+
+class Chunk(TypedDict):
+    """One retrieved passage, as returned by every knowledge connector."""
+
+    text: str
+    metadata: dict[str, Any]
+    score: float
 
 
 class IdentityConnector(ABC):
@@ -13,8 +25,8 @@ class IdentityConnector(ABC):
 
 class KnowledgeConnector(ABC):
     @abstractmethod
-    async def search(self, query: str, tags: set[str], n_results: int = 5) -> list[dict]:
-        """Execute a tag-filtered vector search. Only returns documents whose
+    async def search(self, query: str, tags: Set[str], n_results: int = 5) -> list[Chunk]:
+        """Execute a tag-filtered search. Only returns documents whose
         access_tags intersect with the provided tags."""
 
     @abstractmethod
@@ -23,6 +35,6 @@ class KnowledgeConnector(ABC):
         text: str,
         access_tags: list[str],
         doc_id: str,
-        metadata: dict | None = None,
+        metadata: Mapping[str, MetadataValue] | None = None,
     ) -> None:
         """Store a document with access_tags metadata attached."""
