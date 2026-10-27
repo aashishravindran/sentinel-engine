@@ -1,6 +1,7 @@
 name: release
 
-# Push a tag like v0.2.0 on the `pypi` branch to publish sentinel-authz. No API tokens:
+# Push a tag like v0.2.0 on the `pypi` branch to publish sentinel-authz: test, build, install the
+# built wheel, then upload. No API tokens:
 # PyPI trusts this workflow through OIDC (Trusted Publishing) and attaches attestations.
 on:
   push:
@@ -31,42 +32,21 @@ jobs:
       - run: uv run pytest -q
       - run: uv build
       - run: uvx twine@7.0.0 check --strict dist/*
+      # Install the exact wheel that will be uploaded, in a clean environment outside the repo,
+      # and import it: catches packaging mistakes before PyPI, where a version can't be re-used.
+      - name: Install the built wheel
+        run: |
+          wheel="$(ls "$PWD"/dist/*.whl)"
+          cd "$RUNNER_TEMP"
+          uv run --isolated --no-project --python 3.12 --with "${wheel}[aws,sqlite]" \
+            python -I -c "import sentinel_engine; from sentinel_engine import SentinelEngine; import importlib.metadata as m; print(m.version('sentinel-authz'))"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: dist
           path: dist/
 
-  testpypi:
-    needs: build
-    runs-on: ubuntu-latest
-    environment: testpypi
-    permissions:
-      id-token: write
-    steps:
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
-        with:
-          name: dist
-          path: dist/
-      - uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3
-        with:
-          repository-url: https://test.pypi.org/legacy/
-      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
-      # Install what was just published, in a clean environment, before touching real PyPI.
-      - name: Install from TestPyPI
-        run: |
-          version="${GITHUB_REF_NAME#v}"
-          for i in 1 2 3 4 5 6; do
-            uv run --isolated --no-project --python 3.12 \
-              --index https://test.pypi.org/simple/ --index-strategy unsafe-best-match \
-              --with "sentinel-authz[aws,sqlite]==$version" \
-              python -c "import sentinel_engine; from sentinel_engine import SentinelEngine; print('ok')" \
-              && exit 0
-            sleep 20
-          done
-          exit 1
-
   pypi:
-    needs: testpypi
+    needs: build
     runs-on: ubuntu-latest
     environment: pypi
     permissions:
