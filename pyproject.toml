@@ -1,15 +1,15 @@
 [project]
-# Published to PyPI as sentinel-rag-engine: "sentinel-engine" there is an unrelated project.
+# Published to PyPI as sentinel-authz: "sentinel-engine" there is an unrelated project.
 # The import name is unchanged: `import sentinel_engine`.
-name = "sentinel-rag-engine"
+name = "sentinel-authz"
 version = "0.2.0"
-description = "Policy decision point for permission-aware RAG: resolve who a caller is allowed to read, push that into the retrieval query, fail closed."
+description = "Authorization for AI agents and the tools they call: verified identity, live permissions, enforcement pushed into the query, fail closed."
 readme = "README.md"
 license = "Elastic-2.0"
 license-files = ["LICENSE", "NOTICE"]
 authors = [{ name = "Aashish Ravindran" }]
 requires-python = ">=3.11"
-keywords = ["rag", "retrieval", "access-control", "authorization", "mcp", "ai-agents", "security"]
+keywords = ["authorization", "access-control", "ai-agents", "mcp", "rag", "retrieval", "policy", "security"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -31,7 +31,7 @@ sqlite = ["aiosqlite>=0.20"]
 spicedb = ["authzed>=0.8", "grpcio>=1.60"]
 aws = ["aioboto3>=13.0", "boto3>=1.34"]
 chroma = ["chromadb>=0.5", "sentence-transformers>=2.7"]
-all = ["sentinel-rag-engine[sqlite,spicedb,aws,chroma]"]
+all = ["sentinel-authz[sqlite,spicedb,aws,chroma]"]
 
 [project.urls]
 Repository = "https://github.com/aashishravindran/sentinel-engine"

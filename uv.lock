@@ -3719,7 +3719,7 @@ wheels = [
 ]
 
 [[package]]
-name = "sentinel-rag-engine"
+name = "sentinel-authz"
 version = "0.2.0"
 source = { editable = "." }
 dependencies = [
@@ -3771,7 +3771,7 @@ requires-dist = [
     { name = "grpcio", marker = "extra == 'spicedb'", specifier = ">=1.60" },
     { name = "pyjwt", extras = ["crypto"], specifier = ">=2.8" },
     { name = "sentence-transformers", marker = "extra == 'chroma'", specifier = ">=2.7" },
-    { name = "sentinel-rag-engine", extras = ["sqlite", "spicedb", "aws", "chroma"], marker = "extra == 'all'" },
+    { name = "sentinel-authz", extras = ["sqlite", "spicedb", "aws", "chroma"], marker = "extra == 'all'" },
 ]
 provides-extras = ["sqlite", "spicedb", "aws", "chroma", "all"]
 

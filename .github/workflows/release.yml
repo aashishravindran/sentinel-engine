@@ -1,6 +1,6 @@
 name: release
 
-# Push a tag like v0.2.0 on the `pypi` branch to publish sentinel-rag-engine. No API tokens:
+# Push a tag like v0.2.0 on the `pypi` branch to publish sentinel-authz. No API tokens:
 # PyPI trusts this workflow through OIDC (Trusted Publishing) and attaches attestations.
 on:
   push:
@@ -58,7 +58,7 @@ jobs:
           for i in 1 2 3 4 5 6; do
             uv run --isolated --no-project --python 3.12 \
               --index https://test.pypi.org/simple/ --index-strategy unsafe-best-match \
-              --with "sentinel-rag-engine[aws,sqlite]==$version" \
+              --with "sentinel-authz[aws,sqlite]==$version" \
               python -c "import sentinel_engine; from sentinel_engine import SentinelEngine; print('ok')" \
               && exit 0
             sleep 20
