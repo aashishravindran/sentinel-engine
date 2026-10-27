@@ -11,8 +11,13 @@ It is the engine behind [Sentinel](https://github.com/aashishravindran/Sentinel)
 and AgentCore Gateway interceptors, and it works on its own in any Python RAG pipeline.
 
 ```bash
-pip install "sentinel-engine[spicedb] @ git+https://github.com/aashishravindran/sentinel-engine@v0.1.0"
+pip install "sentinel-rag-engine[spicedb]"
 ```
+
+On PyPI the package is **`sentinel-rag-engine`** (the name `sentinel-engine` there belongs to an
+unrelated project); you still `import sentinel_engine`. Pinning the git tag keeps working:
+`pip install "sentinel-engine[spicedb] @ git+https://github.com/aashishravindran/sentinel-engine@v0.1.0"`.
+See [Moving from the git tag to PyPI](#moving-from-the-git-tag-to-pypi).
 
 ```python
 from sentinel_engine import SentinelEngine, AccessDeniedError
@@ -78,3 +83,24 @@ uv run pytest && uv run ruff check . && uv run pyright
 ```
 
 Licensed under the [Elastic License 2.0](LICENSE).
+
+## Moving from the git tag to PyPI
+
+Versions up to `v0.1.0` are installed from git as `sentinel-engine`; from `0.2.0` they are on PyPI as
+`sentinel-rag-engine`. The code and the import name are the same, so switching is one dependency
+line. With uv:
+
+```toml
+# before
+dependencies = ["sentinel-engine[aws]"]
+[tool.uv.sources]
+sentinel-engine = { git = "https://github.com/aashishravindran/sentinel-engine", tag = "v0.1.0" }
+
+# after
+dependencies = ["sentinel-rag-engine[aws]>=0.2,<0.3"]
+```
+
+Install one or the other, never both: they provide the same `sentinel_engine` package. Don't drop the
+`[tool.uv.sources]` entry while still depending on `sentinel-engine`; plain `sentinel-engine` on PyPI is
+someone else's project.
+

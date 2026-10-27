@@ -3719,8 +3719,8 @@ wheels = [
 ]
 
 [[package]]
-name = "sentinel-engine"
-version = "0.1.0"
+name = "sentinel-rag-engine"
+version = "0.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "pyjwt", extra = ["crypto"] },
@@ -3771,7 +3771,7 @@ requires-dist = [
     { name = "grpcio", marker = "extra == 'spicedb'", specifier = ">=1.60" },
     { name = "pyjwt", extras = ["crypto"], specifier = ">=2.8" },
     { name = "sentence-transformers", marker = "extra == 'chroma'", specifier = ">=2.7" },
-    { name = "sentinel-engine", extras = ["sqlite", "spicedb", "aws", "chroma"], marker = "extra == 'all'" },
+    { name = "sentinel-rag-engine", extras = ["sqlite", "spicedb", "aws", "chroma"], marker = "extra == 'all'" },
 ]
 provides-extras = ["sqlite", "spicedb", "aws", "chroma", "all"]
 
