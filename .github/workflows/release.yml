@@ -1,6 +1,6 @@
 name: release
 
-# Push a tag like v0.2.0 on the `pypi` branch to publish sentinel-authz: test, build, install the
+# Push a tag like v0.3.0 on `main` to publish sentinel-authz: test, build, install the
 # built wheel, then upload. No API tokens:
 # PyPI trusts this workflow through OIDC (Trusted Publishing) and attaches attestations.
 on:
@@ -20,11 +20,11 @@ jobs:
       - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
         with:
           python-version: "3.12"
-      # Releases come only from the packaging branch, and the tag must match the version.
+      # Releases come only from main, and the tag must match the version.
       - name: Check branch and version
         run: |
-          git branch -r --contains "$GITHUB_SHA" | grep -qx '  origin/pypi' \
-            || { echo "::error::$GITHUB_REF_NAME is not on the pypi branch"; exit 1; }
+          git branch -r --contains "$GITHUB_SHA" | grep -qx '  origin/main' \
+            || { echo "::error::$GITHUB_REF_NAME is not on main"; exit 1; }
           version=$(sed -n 's/^version = "\(.*\)"/\1/p' pyproject.toml)
           [ "v$version" = "$GITHUB_REF_NAME" ] \
             || { echo "::error::tag $GITHUB_REF_NAME does not match version $version"; exit 1; }

@@ -36,7 +36,7 @@ all = ["sentinel-authz[sqlite,spicedb,aws,chroma]"]
 [project.urls]
 Repository = "https://github.com/aashishravindran/sentinel-engine"
 Issues = "https://github.com/aashishravindran/sentinel-engine/issues"
-Changelog = "https://github.com/aashishravindran/sentinel-engine/blob/pypi/CHANGELOG.md"
+Changelog = "https://github.com/aashishravindran/sentinel-engine/blob/main/CHANGELOG.md"
 
 [dependency-groups]
 dev = [
